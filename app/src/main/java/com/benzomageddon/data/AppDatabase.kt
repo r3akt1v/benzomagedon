@@ -1,0 +1,36 @@
+package com.benzomageddon.data
+
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import com.benzomageddon.data.converter.Converters
+import com.benzomageddon.data.dao.CategoryDao
+import com.benzomageddon.data.dao.TransactionDao
+
+@Database(
+    entities = [Transaction::class, Category::class],
+    version = 1,
+    exportSchema = false
+)
+@TypeConverters(Converters::class)
+abstract class AppDatabase : RoomDatabase() {
+
+    abstract fun transactionDao(): TransactionDao
+    abstract fun categoryDao(): CategoryDao
+
+    companion object {
+        @Volatile
+        private var instance: AppDatabase? = null
+
+        fun getInstance(context: Context): AppDatabase =
+            instance ?: synchronized(this) {
+                instance ?: Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "benzomageddon.db"
+                ).build().also { instance = it }
+            }
+    }
+}
